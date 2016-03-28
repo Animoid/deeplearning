@@ -1,7 +1,7 @@
 # Start with cuDNN base image
 FROM animoid/cudnn:latest
 MAINTAINER David Jung <david@egomachines.com>
-#  based on Dockerfiles by Kai Arulkumaran
+#  based on Dockerfiles by Kai Arulkumaran - https://github.com/Kaixhin/dockerfiles
 
 # Install git, python-dev, pip and other dependencies
 RUN apt-get update && apt-get install -y \

@@ -1,7 +1,7 @@
 # Start with official NVidia CUDA base image
 FROM nvidia/cuda:latest
 MAINTAINER David Jung <david@egomachines.com>
-#  based on Dockerfiles by Kai Arulkumaran
+#  based on Dockerfiles by Kai Arulkumaran - https://github.com/Kaixhin/dockerfiles
 
 RUN apt-get update
 RUN apt-get install -y wget

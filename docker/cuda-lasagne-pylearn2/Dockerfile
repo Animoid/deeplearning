@@ -20,10 +20,23 @@ RUN wget https://github.com/Itseez/opencv/archive/3.1.0.zip -O opencv-3.1.0.zip 
 
 ## PyLearn2
 
-RUN sudo apt-get update && apt-get install -y python-PIL
-RUN sudo pip install Pillow six
+RUN apt-get update && apt-get install -y \
+  curl \
+  cython \
+  python-imaging \
+  python-matplotlib \
+  python-yaml \
+  python-PIL
 
-RUN git clone git://github.com/lisa-lab/pylearn2.git \
- && cd pylearn2 \
- && sudo python setup.py develop \
- && cat "export PYLEARN2_DATA_PATH=/data/lisa/data" >> ~/.bashrc
+# Upgrade six
+RUN pip install --upgrade six
+
+# Clone Pylearn2 repo and move into it
+RUN cd /root && git clone https://github.com/lisa-lab/pylearn2.git && cd pylearn2 && \
+  # Install
+  python setup.py develop
+
+# Make and set data directory
+RUN mkdir /data
+ENV PYLEARN2_DATA_PATH=/data
+VOLUME /data

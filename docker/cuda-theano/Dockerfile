@@ -6,12 +6,15 @@ MAINTAINER David Jung <david@egomachines.com>
 # Install git, python-dev, pip and other dependencies
 RUN apt-get update && apt-get install -y \
   git \
-  libopenblas-dev \
   python-dev \
   python-pip \
   python-nose \
-  python-numpy \
-  python-scipy
+  libatlas-base-dev \
+  gfortran
+#  libopenblas-dev 
+
+RUN pip install numpy==1.11 
+RUN pip install scipy
 
 # Set CUDA_ROOT
 ENV CUDA_ROOT /usr/local/cuda/bin

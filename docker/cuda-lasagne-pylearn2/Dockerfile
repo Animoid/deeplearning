@@ -8,9 +8,15 @@ RUN apt-get update && apt-get install -y \
   curl \
   cython \
   python-imaging \
-  python-matplotlib \
   python-yaml \
   python-PIL
+#  python-matplotlib \
+
+# Install matplotlib via pip to use our /usr/local/lib version of 
+#  numpy rather than pulling in older distro python-numpy into /usr/lib
+
+RUN pip install matplotlib
+
 
 # Upgrade six
 RUN pip install --upgrade six

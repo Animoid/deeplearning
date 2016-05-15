@@ -10,7 +10,17 @@ RUN sudo apt-get update && apt-get install -y build-essential \
     libavcodec-dev libavformat-dev libswscale-dev libv4l-dev \
     libtbb2 libtbb-dev libatlas-base-dev gfortran \
     python-dev libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev unzip \
-&& apt-get clean
+&& sudo apt-get clean
+
+# install cmake 3.2.x (work around issue in opencv install)
+#  see: http://stackoverflow.com/questions/24174394/cmake-is-not-able-to-find-python-libraries
+RUN sudo apt-get remove -y cmake \
+    && apt-get install -y software-properties-common \
+    && sudo add-apt-repository ppa:george-edison55/cmake-3.x \
+    && sudo apt-get update -y \
+    && sudo apt-get install -y cmake \
+    && sudo apt-get clean
+
 
 # Notes:
 #  Numpy path assume it was installed into /usr/local/lib rather than the distribution path /usr/lib
@@ -35,23 +45,35 @@ RUN cd ~/opencv \
     -D PYTHON_INCLUDE_DIR=/usr/include/python2.7 -D PYTHON_INCLUDE_DIR2=/usr/include/x86_64-linux-gnu/python2.7 \
     -D PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython2.7.so -D PYTHON2_NUMPY_INCLUDE_DIRS=/usr/local/lib/python2.7/dist-packages/numpy/core/include \ 
     -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+    -D BUILD_opencv_world=OFF \
     -D INSTALL_PYTHON_EXAMPLES=ON -D BUILD_EXAMPLES=OFF .. \
  && make -j$((`expr \`nproc\`-1`))
 # && make -j7
 
+# unsure if these need to be redefined or not (seems to re-run configure step)
+ENV PYTHON_LIBRARY /usr/lib/x86_64-linux-gnu/libpython2.7.so 
+ENV PYTHON_INCLUDE_DIRS /usr/include/python2.7 
+ENV PYTHON_INCLUDE_DIR /usr/include/python2.7 
+ENV PYTHON_INCLUDE_DIR2 /usr/include/x86_64-linux-gnu/python2.7 
+ENV PYTHON2_NUMPY_INCLUDE_DIRS /usr/local/lib/python2.7/dist-packages/numpy/core/include 
+ENV OPENCV_EXTRA_MODULES_PATH ~/opencv_contrib/modules 
+ENV INSTALL_PYTHON_EXAMPLES ON 
+ENV BUILD_EXAMPLES OFF 
+ENV BUILD_opencv_world OFF
+
 RUN cd ~/opencv/build \
-  && sudo make PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython2.7.so \
-    PYTHON_INCLUDE_DIRS=/usr/include/python2.7 \ 
-    PYTHON_INCLUDE_DIR=/usr/include/python2.7 PYTHON_INCLUDE_DIR2=/usr/include/x86_64-linux-gnu/python2.7 \
-    PYTHON2_NUMPY_INCLUDE_DIRS=/usr/local/lib/python2.7/dist-packages/numpy/core/include \
-    OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
-    INSTALL_PYTHON_EXAMPLES=ON BUILD_EXAMPLES=OFF \
-    install
+  && sudo make BUILD_opencv_world=OFF install
 
 RUN sudo ldconfig
 
 # cleanup
-
 RUN cd ~/opencv/build \
   && make clean \
   && sudo apt-get autoclean
+RUN rm -rf ~/opencv \
+  && rm -rf ~/opencv_contrib
+
+
+# Fix issue with libdc1394 error
+#  see: http://stackoverflow.com/questions/12689304/ctypes-error-libdc1394-error-failed-to-initialize-libdc1394
+CMD sh -c 'ln -s /dev/null /dev/raw1394'; /bin/bash
